@@ -1,16 +1,16 @@
 const Sequelize = require("sequelize");
 require("dotenv").config();
 
-const db = new Sequelize(
-  process.env.DB_DATABASE,
-  process.env.DB_USER,
-  process.env.DB_PASSWORD,
-  {
-    host: process.env.DB_HOST,
-    dialect: process.env.DB_DIALECT || 'postgres',  // Valor padrão
-    port: process.env.DB_PORT,
+const db = new Sequelize(process.env.DATABASE_URL, {
+  dialect: 'postgres',
+  protocol: 'postgres',
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false
+    }
   }
-);
+});
 
 // Verifica a autenticação com o banco de dados
 db.authenticate()
@@ -21,7 +21,7 @@ db.authenticate()
     console.error("Database connection failed:", error);
   });
 
-// Sincronize os modelos com o banco de dados
+// Sincroniza os modelos com o banco de dados
 db.sync()
   .then(() => {
     console.log("Tabelas sincronizadas com o banco de dados.");
