@@ -42,9 +42,10 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 
 app.use(session({
-  secret: process.env.SESSION_SECRET,
+  secret: process.env.SESSION_SECRET || 'Deus é bom', //chave super secreta
   resave: false,
   saveUninitialized: true,
+  cookie: { secure: true }
 }));
 
 const server = http.createServer(app);
