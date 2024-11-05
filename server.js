@@ -4,7 +4,6 @@ const debug = require("debug")("nodestr:server");
 const express = require('express');
 const session = require('express-session');
 const passport = require('passport');
-const passportSetup = require('./src/config/passport-setup'); // O arquivo que você criou anteriormente
 const authRoutes = require('./src/routes/authRoutes');
 require("dotenv").config();
 const database = require('./src/database/db');
@@ -15,7 +14,7 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerJsDoc = require('swagger-jsdoc');
 require('./src/models/associations'); 
 
-const port = normalizePort(process.env.PORT || '3000');
+const port = normalizePort(process.env.PORT || '3001');
 
 app.set('port', port);
 
