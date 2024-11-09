@@ -6,11 +6,10 @@ const userController = require('./src/controllers/userController');
 const professionalController = require('./src/controllers/professionalController');
 const patientController = require('./src/controllers/patientController');
 const assessmentController = require('./src/controllers/assessmentController');
+const { authenticateUser } = require("./src/middlewares/authMiddleware");
 
 
 require('dotenv').config();
-
-
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -20,7 +19,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // Define routes for users
 app.post('/login', userController.loginUser);
 app.post('/register', userController.createUser);
-app.get('/users', userController.getAllUsers);
+app.get('/users', authenticateUser,userController.getAllUsers);
 app.get('/users/:id', userController.getUserById);
 app.put('/users/:id', userController.updateUser);
 app.delete('/users/:id', userController.deleteUser);
@@ -37,11 +36,11 @@ app.put('/professional/:id', professionalController.updateProfessional);
 app.delete('/professional/:id', professionalController.deleteProfessional);
 
 // Define routes for patients
-app.get('/patients', patientController.getAllPatients); // Changed from /patient to /patients
-app.get('/patient/:id', patientController.getPatientById); // Changed from /patient to /patients
-app.post('/patient', patientController.createPatient); // Changed from /patient to /patients
-app.put('/patient/:id', patientController.updatePatient); // Changed from /patient to /patients
-app.delete('/patient/:id', patientController.deletePatient); // Changed from /patient to /patients
+app.get('/patients', patientController.getAllPatients); 
+app.get('/patient/:id', patientController.getPatientById); 
+app.post('/patient', patientController.createPatient);
+app.put('/patient/:id', patientController.updatePatient); 
+app.delete('/patient/:id', patientController.deletePatient); 
 
 // Define routes for assessments
 app.get('/assessments', assessmentController.getAllAssessments);
