@@ -578,11 +578,19 @@ exports.resetPasswordRequest = async (req, res, next) => {
       }
     });
     console.log("email:",process.env.EMAIL_USER, "senha:",process.env.EMAIL_PASS);
+    // Captura a origem da requisição
+    const origin = req.get('Origin');
 
     // Define a URL do frontend com base na origem
 
-    frontendUrl = 'http://localhost:3001'; 
-    
+    let frontendUrl;
+    if (origin.includes('localhost')) {
+      frontendUrl = 'http://localhost:3001'; 
+    } else if (origin.includes('avasoft-landingpage.netlify.app')) {
+      frontendUrl = 'https://avasoft-landingpage.netlify.app';
+    } else {
+      frontendUrl = 'https://avasoft-landingpage.netlify.app';
+    }
 
     const mailOptions = {
       to: email,
