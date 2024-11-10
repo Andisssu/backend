@@ -581,7 +581,8 @@ exports.resetPasswordRequest = async (req, res, next) => {
 
     // Define a URL do frontend com base na origem
 
-    frontendUrl = 'https://avasoft-landingpage.netlify.app';
+    frontendUrl = 'http://localhost:3001'; 
+    
 
     const mailOptions = {
       to: email,
