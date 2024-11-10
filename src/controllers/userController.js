@@ -63,16 +63,25 @@ exports.getAllUsers = async (req, res, next) => {
  */
 exports.getUserById = async (req, res, next) => {
   const userId = req.params.id;
-  User.findByPk(userId)
-    .then((user) => {
-      if (!user) {
-        return res.status(404).json({ message: "User Not Found" });
-      }
-      res.status(200).json({ user: user });
-    })
-    .catch((err) => {
-      res.status(500).json({ message: "Error -> " + err });
+  try {
+    const user = await User.findByPk(userId, {
+      include: [
+        {
+          model: Patient,
+          as: 'patient',
+          attributes: ['id_patient']
+        }
+      ]
     });
+
+    if (!user) {
+      return res.status(404).json({ message: "User Not Found" });
+    }
+
+    res.status(200).json({ user });
+  } catch (err) {
+    res.status(500).json({ message: "Error -> " + err });
+  }
 };
 
 
@@ -569,15 +578,44 @@ exports.resetPasswordRequest = async (req, res, next) => {
       }
     });
     console.log("email:",process.env.EMAIL_USER, "senha:",process.env.EMAIL_PASS);
-    const frontendUrl = process.env.FRONTEND_URL;
+
+    // Captura a origem da requisição
+    const origin = req.get('Origin');
+
+    // Define a URL do frontend com base na origem
+    frontendUrl = 'http://localhost:3001'; 
+  
     const mailOptions = {
       to: email,
       from: 'avasoft8@gmail.com',
-      subject: 'Password Reset',
-      text: `Você solicitou a mudança de senha?\n\n
-      http://${frontendUrl}/reset-password-confirm/${resetToken}\n\n
-      caso não tenha ignore este e-mail.\n`
-    };
+      subject: 'Redefinição de Senha - AVASOFT',
+      html: `
+        <div style="font-family: Arial, sans-serif; color: #333; padding: 20px; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 10px;">
+          <div style="text-align: center;">
+            <img src="/src/utils/avasoftlogo.png" alt="AVASOFT Logo" style="width: 120px; margin-bottom: 20px;">
+          </div>
+          <h2 style="color: #FF8139; text-align: center;">Redefinição de Senha</h2>
+          <p style="font-size: 16px; line-height: 1.5;">
+            Olá! Recebemos uma solicitação para redefinir sua senha no AVASOFT. Caso tenha solicitado essa alteração, clique no botão abaixo para redefinir sua senha:
+          </p>
+          <div style="text-align: center; margin: 20px 0;">
+            <a href="${frontendUrl}/reset-password-confirm/${resetToken}" 
+               style="display: inline-block; padding: 15px 25px; font-size: 16px; color: #fff; background-color: #FF8139; text-decoration: none; border-radius: 5px;">
+              Redefinir Senha
+            </a>
+          </div>
+          <p style="font-size: 14px; color: #777; line-height: 1.5;">
+            Caso você não tenha solicitado a redefinição de senha, por favor, ignore este e-mail. Sua senha permanecerá inalterada.
+          </p>
+          <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+          <footer style="text-align: center; color: #777; font-size: 12px;">
+            AVASOFT | Avaliação Antropométrica<br>
+            Todos os direitos reservados &copy; 2024
+          </footer>
+        </div>
+      `
+  };
+    
 
     await transporter.sendMail(mailOptions);
 
