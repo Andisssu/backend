@@ -599,7 +599,7 @@ exports.resetPasswordRequest = async (req, res, next) => {
       html: `
         <div style="font-family: Arial, sans-serif; color: #333; padding: 20px; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 10px;">
           <div style="text-align: center;">
-            <img src="/src/utils/avasoftlogo.png" alt="AVASOFT Logo" style="width: 120px; margin-bottom: 20px;">
+            <img src="https://flic.kr/p/2qtjVHi" alt="AVASOFT Logo" style="width: 120px; margin-bottom: 20px;">
           </div>
           <h2 style="color: #FF8139; text-align: center;">Redefinição de Senha</h2>
           <p style="font-size: 16px; line-height: 1.5;">
