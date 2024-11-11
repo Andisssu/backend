@@ -647,6 +647,8 @@ const sendWelcomeEmail = async (fullName, email, userName, tempPassword) => {
       }
     });
 
+    frontendUrl = 'https://avasoft-landingpage.netlify.app';
+
     const mailOptions = {
       to: email,
       from: 'avasoft8@gmail.com',
