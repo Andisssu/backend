@@ -665,14 +665,16 @@ const sendWelcomeEmail = async (fullName, email, userName, tempPassword) => {
             <li><strong>Usuário:</strong> ${userName}</li>
             <li><strong>Senha temporária:</strong> ${tempPassword}</li>
           </ul>
-          <p style="font-size: 16px; line-height: 1.5;">
+          <p">
             Recomendamos que você altere sua senha após o primeiro login para garantir a segurança da sua conta.
           </p>
-
+          <p>
+              Para acessar o sistema, clique no botão abaixo, em seguida clique em área do paciente e insira suas credenciais.:
+          </p>
           <div style="text-align: center; margin: 20px 0;">
             <a href="${frontendUrl}" 
                style="display: inline-block; padding: 15px 25px; font-size: 16px; color: #fff; background-color: #FF8139; text-decoration: none; border-radius: 5px;">
-              Ir para o AVASOFT
+              Acessar o AVASOFT
             </a>
           </div>
 
