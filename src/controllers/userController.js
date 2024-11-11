@@ -217,6 +217,9 @@ exports.createUser = async (req, res, next) => {
     try {
       if (role === "Paciente") {
         await Patient.create({ user_id: user.id_user });
+
+         // Enviar e-mail ao paciente após criação
+         await sendWelcomeEmail(fullName, email, userName, password);
       } else if (role === "Profissional") {
         await Professional.create({ user_id: user.id_user });
       }
@@ -630,6 +633,57 @@ exports.resetPasswordRequest = async (req, res, next) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error requesting password reset" });
+  }
+};
+
+const sendWelcomeEmail = async (fullName,email, userName, password) => {
+  try {
+    // Configuração do transporte de e-mail
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+
+    // Configuração do conteúdo do e-mail de boas-vindas
+    const mailOptions = {
+      to: email,
+      from: 'avasoft8@gmail.com',
+      subject: 'Bem-vindo ao AVASOFT - Conta Criada com Sucesso!',
+      html: `
+        <div style="font-family: Arial, sans-serif; color: #333; padding: 20px; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 10px;">
+          <div style="text-align: center;">
+            <img src="https://live.staticflickr.com/65535/54130493071_89edec6c89_m.jpg" alt="AVASOFT Logo" style="width: 120px; margin-bottom: 20px;">
+          </div>
+          <h2 style="color: #FF8139; text-align: center;">Bem-vindo ao AVASOFT!</h2>
+          <p style="font-size: 16px; line-height: 1.5;">
+            Olá, ${fullName}! Sua conta foi criada com sucesso no sistema AVASOFT.
+          </p>
+          <p style="font-size: 16px; line-height: 1.5;">
+            Aqui estão seus dados de acesso:
+          </p>
+          <ul style="font-size: 16px; line-height: 1.5;">
+            <li><strong>Usuário:</strong> ${userName}</li>
+            <li><strong>Senha temporária:</strong> ${password}</li>
+          </ul>
+          <p style="font-size: 16px; line-height: 1.5;">
+            Recomendamos que você altere sua senha após o primeiro login para garantir a segurança da sua conta.
+          </p>
+          <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+          <footer style="text-align: center; color: #777; font-size: 12px;">
+            AVASOFT | Avaliação Antropométrica<br>
+            Todos os direitos reservados &copy; 2024
+          </footer>
+        </div>
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log('Email enviado com sucesso para ' + email);
+  } catch (error) {
+    console.error('Erro ao enviar o e-mail:', error);
   }
 };
 
