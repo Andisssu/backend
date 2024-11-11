@@ -163,6 +163,10 @@ exports.getUserById = async (req, res, next) => {
  *         description: Erro na criação do usuário ou na criação do registro associado
  */
 
+// Importa o gerador de senhas
+const generator = require('generate-password');
+
+// Função para criação de usuário
 exports.createUser = async (req, res, next) => {
   const {
     fullName,
@@ -179,73 +183,70 @@ exports.createUser = async (req, res, next) => {
     state,
     cep,
     role,
-    userName,
-    password,
-    confirmPassword,
+    userName
   } = req.body;
-  // Check if passwords match
-  if (password !== confirmPassword) {
-    return res.status(400).json({ message: "Passwords do not match" });
-  }
 
   try {
-    // Generate a salt and hash the password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Create the user in the database with the hashed password
-    const user = await User.create({
-      fullName: fullName,
-      cpf: cpf,
-      dataNasc: dataNasc,
-      gender: gender,
-      phone: phone,
-      email: email,
-      street: street,
-      number: number,
-      complement: complement,
-      district: district,
-      city: city,
-      state: state,
-      cep: cep,
-      role: role,
-      userName: userName,
-      password: hashedPassword,
+    // Gera uma senha temporária
+    const tempPassword = generator.generate({
+      length: 10,
+      numbers: true
     });
 
-    // Try to create the associated record based on role
+    // Gera o hash da senha temporária
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(tempPassword, salt);
+
+    // Cria o usuário no banco de dados com a senha temporária
+    const user = await User.create({
+      fullName,
+      cpf,
+      dataNasc,
+      gender,
+      phone,
+      email,
+      street,
+      number,
+      complement,
+      district,
+      city,
+      state,
+      cep,
+      role,
+      userName,
+      password: hashedPassword
+    });
+
     try {
+      // Cria o registro associado para "Paciente" e envia e-mail
       if (role === "Paciente") {
         await Patient.create({ user_id: user.id_user });
-
-         // Enviar e-mail ao paciente após criação
-         await sendWelcomeEmail(fullName, email, userName, password);
+        await sendWelcomeEmail(fullName, email, userName, tempPassword);
       } else if (role === "Profissional") {
         await Professional.create({ user_id: user.id_user });
       }
+
+      // Gera um token de autenticação
+      const token = jwt.sign(
+        { userId: user.id, email: user.email },
+        process.env.JWT_SECRET,
+        { expiresIn: "1h" }
+      );
+
+      res.status(201).json({
+        message: "Usuário criado com sucesso!",
+        user,
+        token
+      });
     } catch (assocError) {
-      // If there's an error creating the associated record, delete the user
       await user.destroy();
       return res.status(500).json({
-        message: "Error creating associated record -> " + assocError,
+        message: "Erro ao criar registro associado: " + assocError,
       });
     }
-
-    // Generate authentication token
-    const token = jwt.sign(
-      { userId: user.id, email: user.email },
-      process.env.JWT_SECRET, // Secret key from .env file
-      { expiresIn: "1h" } // Token expiration time
-    );
-
-    res.status(201).json({
-      message: "User created successfully!",
-      user: user,
-      token: token,
-    });
   } catch (error) {
     res.status(500).json({
-      message: "Error creating user -> " + error,
+      message: "Erro ao criar usuário: " + error,
     });
   }
 };
@@ -636,9 +637,8 @@ exports.resetPasswordRequest = async (req, res, next) => {
   }
 };
 
-const sendWelcomeEmail = async (fullName,email, userName, password) => {
+const sendWelcomeEmail = async (fullName, email, userName, tempPassword) => {
   try {
-    // Configuração do transporte de e-mail
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -647,7 +647,6 @@ const sendWelcomeEmail = async (fullName,email, userName, password) => {
       }
     });
 
-    // Configuração do conteúdo do e-mail de boas-vindas
     const mailOptions = {
       to: email,
       from: 'avasoft8@gmail.com',
@@ -658,15 +657,11 @@ const sendWelcomeEmail = async (fullName,email, userName, password) => {
             <img src="https://live.staticflickr.com/65535/54130493071_89edec6c89_m.jpg" alt="AVASOFT Logo" style="width: 120px; margin-bottom: 20px;">
           </div>
           <h2 style="color: #FF8139; text-align: center;">Bem-vindo ao AVASOFT!</h2>
-          <p style="font-size: 16px; line-height: 1.5;">
-            Olá, ${fullName}! Sua conta foi criada com sucesso no sistema AVASOFT.
-          </p>
-          <p style="font-size: 16px; line-height: 1.5;">
-            Aqui estão seus dados de acesso:
-          </p>
-          <ul style="font-size: 16px; line-height: 1.5;">
+          <p>Olá, ${fullName}! Sua conta foi criada com sucesso no sistema AVASOFT.</p>
+          <p>Aqui estão seus dados de acesso:</p>
+          <ul>
             <li><strong>Usuário:</strong> ${userName}</li>
-            <li><strong>Senha temporária:</strong> ${password}</li>
+            <li><strong>Senha temporária:</strong> ${tempPassword}</li>
           </ul>
           <p style="font-size: 16px; line-height: 1.5;">
             Recomendamos que você altere sua senha após o primeiro login para garantir a segurança da sua conta.
@@ -680,6 +675,8 @@ const sendWelcomeEmail = async (fullName,email, userName, password) => {
           </div>
 
           <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+          <p>Recomendamos que você altere sua senha após o primeiro login para garantir a segurança da sua conta.</p>
+
           <footer style="text-align: center; color: #777; font-size: 12px;">
             AVASOFT | Avaliação Antropométrica<br>
             Todos os direitos reservados &copy; 2024
@@ -694,4 +691,5 @@ const sendWelcomeEmail = async (fullName,email, userName, password) => {
     console.error('Erro ao enviar o e-mail:', error);
   }
 };
+
 
