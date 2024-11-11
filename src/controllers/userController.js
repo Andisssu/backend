@@ -671,6 +671,14 @@ const sendWelcomeEmail = async (fullName,email, userName, password) => {
           <p style="font-size: 16px; line-height: 1.5;">
             Recomendamos que você altere sua senha após o primeiro login para garantir a segurança da sua conta.
           </p>
+
+          <div style="text-align: center; margin: 20px 0;">
+            <a href="${frontendUrl}" 
+               style="display: inline-block; padding: 15px 25px; font-size: 16px; color: #fff; background-color: #FF8139; text-decoration: none; border-radius: 5px;">
+              Ir para o AVASOFT
+            </a>
+          </div>
+
           <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
           <footer style="text-align: center; color: #777; font-size: 12px;">
             AVASOFT | Avaliação Antropométrica<br>
